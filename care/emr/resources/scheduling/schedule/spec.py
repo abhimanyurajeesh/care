@@ -29,6 +29,12 @@ class AvailabilityDateTimeSpec(EMRResource):
     start_time: datetime.time
     end_time: datetime.time
 
+    @model_validator(mode="after")
+    def validate_time_range(self):
+        if self.start_time >= self.end_time:
+            raise ValueError("Start time cannot be greater than end time")
+        return self
+
 
 class AvailabilityBaseSpec(EMRResource):
     __model__ = Availability
@@ -97,7 +103,7 @@ class ScheduleCreateSpec(ScheduleBaseSpec):
     @model_validator(mode="after")
     def validate_period(self):
         if self.valid_from > self.valid_to:
-            raise ValidationError("Valid from cannot be greater than valid to")
+            raise ValueError("Valid from cannot be greater than valid to")
         return self
 
     def perform_extra_deserialization(self, is_update, obj):
